@@ -1,0 +1,127 @@
+---
+title: "lab_02"
+author: "Derek Willis"
+date: "2025-01-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libraries and establish settings
+
+```{r}
+# Turn off scientific notation
+options(scipen=999)
+
+# Load the tidyverse. If you have not installed the tidyverse already, remove the # from the next line and run it first.  
+# install.packages('tidyverse')
+library(tidyverse)
+library(lubridate)
+```
+
+## Load Data
+
+Let's keep working with the UMD courses and Maryland campaign expense data we used in the pre_lab.
+
+```{r}
+umd_courses <- read_rds("data/umd_courses.rds")
+maryland_expenses <- read_csv("data/maryland_expenses.csv")
+```
+
+## Answer questions
+
+**Q1.** How many departments have offered the courses with "Climate" in the title and at least one seat? Which department has offered the most? **A1.**
+
+Atmospheric and Ocean Science offered the most classes with at least one seat and climate in the title with 93.
+
+```{r}
+climate_morethan_one <- umd_courses |>
+  filter(str_detect(title, "Climate")) |> filter(seats >= 1) |> 
+  group_by(department) |>
+  summarise(
+    count_class = n()
+  )
+```
+
+**Q2.** Of the departments listed in A1, which one is the most interesting to you, and why? **A2.**
+
+Probably German Studies. The one class it offers about climate sticks out, as someone who took a German Studies class back in freshman year it was almost entirely about learning the language, wonder if it's a class about climate taught exclusively in German or a class about climate in German-speaking regions. Little interesting thing that might be worth looking into a bit more.
+
+**Q3** Which departments offered the most courses in the Fall 2024 term? And which departments in that term have at least one syllabus posted? Answer both of those questions and then compare the top five departments - how are they different?
+
+**A3.**
+
+Top five departments by classes offered: Business and Management, School of Music, Information Studies, English and Teaching and Learning, Policy and Leadership
+
+At least one syllabus: 134 departments have at least one syllabus posted out of 196 possible departments
+
+The top five departments with at least one syllabus posted were Business and Management, Economics, School of Music, Information Studies and Engineering, Professional Masters. When you add the stipulation that at least one syllabus must be posted, English and Teaching and Learning, Policy and Leadership drop out of the top five for classes, while Economics and Engineering, Professional Masters enter the picture.
+
+```{r}
+fall24_table_with_syllabus <- umd_courses |> filter(term == 202408) |> 
+  filter(syllabus_count >= 1) |>
+  group_by(department) |>
+summarise(
+  classes = n(),
+)
+
+fall24_table <- umd_courses |> filter(term == 202408) |> 
+  group_by(department) |>
+summarise(
+  classes = n(),
+)
+```
+
+**Q4.** Using the Maryland campaign expenses data, change the datatype of the expenditure_date column so that it is a date and not a chr, saving the result as a new dataframe. Then create a new column for the month based on expenditure_date. Then write code that shows total amount spent each month by Wes Moore's committee (you'll need to search the data to find the exact name, and we're not looking in payee_name). Write a sentence describing the pattern of spending over time. **A4.**
+
+The spending was by far the lowest in May 2021 at just over $6000. From there, it peaks in August 2021, falls a bit in September then shoots way back up in October. After that, it falls again a bit in November before hitting its highest peak so far in December 2021. Then it kicks into an extra gear increasing every month, even breaking 700K in April 2022 before going down a bit to 660K in May 2022. It then breaks 1 million in June and July before going back down to around 500K for August and September, 300K for October before a final push of about 735K in November 2022.
+
+```{r}
+better_date <- maryland_expenses |> mutate(expenditure_date=mdy(expenditure_date)) |>
+  mutate(month = floor_date(expenditure_date, "month")) |>
+  filter(committee_name == "Moore  Wes For Maryland") |>
+  group_by(month)
+
+spend_per_month <- better_date |> mutate(monthly_spend = sum(amount))
+```
+
+**Q5.** Using case_when(), create a column in the Maryland expenses data called `spending_location` indicating whether each record spent money in Maryland or outside Maryland. For records that are in Maryland, make the new column's value "In-state" and for all others, make it "Out of state". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe). **A5**
+
+The results are weird, after I finally got the column names to read "In-state" and "Out of state," it messed up my other table and now it only list "NA" as the total amount in the out of state column. That said, when the values were "MD" and "NA" I remember the Maryland value being about double the out of state value, and the Maryland value is still the same with these correct column names so I'll go ahead and guess it's about double the "NA" value that R can't seem to generate.
+
+
+
+```{r}
+location_spend <- maryland_expenses |>
+  mutate(spending_location = case_when(
+      str_detect(address, "Maryland") ~ "In-state",
+      TRUE ~ "Out of state"
+    )
+  )
+
+#Prompted ChatGPT for assistance with the following: 
+#"location_spend <- maryland_expenses |> mutate(spending_location = case_when(str_detect(address, "Maryland") ~ "MD", .default = NA ~ "Out of state"))
+#Using this code in R, how do I need to adjust it so that the values in the column can change to 'in-state' and 'out of state'" the answer it gave me is what is in block one, which solved my problem.
+```
+
+```{r}
+location_spend |>
+  group_by(spending_location) |>
+  summarize(total = sum(amount)) |>
+  arrange(desc(total))
+```
+
+**Q6.** Choose your own adventure: using either the UMD courses or campaign expenses data, ask and answer a question that is different than the previous ones. You can use one of the ones you provided in the pre_lab. **A6.**
+
+From prelab: How many classes contain "Journalism" in their course title?
+
+(I tried to do a percent question from prelab but I could not figure it out)
+
+A6: 307
+
+```{r}
+jour_name <- umd_courses |>
+  filter(str_detect(title, "Journalism"))
+```

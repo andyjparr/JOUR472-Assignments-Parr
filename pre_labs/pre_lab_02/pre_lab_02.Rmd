@@ -313,7 +313,7 @@ Mutate is even more useful when combined with some additional functions. Let's k
 **Answer**
 
 ```{r}
-maryland_expenses_with_state <- maryland_expenses |>
+maryland_expenses |>
   mutate(
     state = case_when(
         str_detect(address, " Maryland ") ~ "MD",
