@@ -42,6 +42,9 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 # Clean required data and prepare for analysis if needed. 
 
+sports_owners_donations <- read.csv("https://github.com/fivethirtyeight/data/blob/master/sports-political-donations/sports-political-donations.csv") 
+
+# ABOVE DID NOT WORK!!!
 
 ```
 
