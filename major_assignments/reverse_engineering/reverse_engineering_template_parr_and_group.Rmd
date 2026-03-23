@@ -42,9 +42,7 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 # Clean required data and prepare for analysis if needed. 
 
-sports_owners_donations <- read.csv("https://github.com/fivethirtyeight/data/blob/master/sports-political-donations/sports-political-donations.csv") 
-
-# ABOVE DID NOT WORK!!!
+sports_owners_donations <- read_csv("data/sports-political-donations.csv") |> clean_names()
 
 ```
 
@@ -53,11 +51,21 @@ In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-* **Sentence text**: [Paste in sentence to engineer here]
+* **Sentence text**: "Sports owners' contributions to federal elections since 2015: $47 million ($10m to republicans, $1.9 million to Dems in 2020 as of publishing)"
 * **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
 
 ```{r}
 # Put code to reverse engineer sentence here
+
+#sports_owners_donations$amount <- as.numeric(amount))
+
+clean_numeric <- function(x) {
+  as.numeric(gsub("[,$]", "", x))
+}
+
+sports_owners_donations$amount <- clean_numeric(sports_owners_donations$amount)
+
+#for above, prompted chatgpt with "how to change datatype in r from character to numeric," then "how do i fix NA results"
 
 # Display results of code below this codeblock
 
