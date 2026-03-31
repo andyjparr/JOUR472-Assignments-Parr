@@ -42,7 +42,7 @@ In this section, describe the source of the data, write a basic data dictionary 
 
 # Clean required data and prepare for analysis if needed. 
 
-sports_owners_donations <- read_csv("data/sports-political-donations.csv") |> clean_names()
+sports_political_donations <- read_csv("data/sports-political-donations.csv") |> clean_names()
 
 ```
 
@@ -52,7 +52,8 @@ In this notebook, we are reverse engineering five sentences from the story.
 ### Sentence 1
 
 * **Sentence text**: "Sports owners' contributions to federal elections since 2015: $47 million ($10m to republicans, $1.9 million to Dems in 2020 as of publishing)"
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?] We were able to confirm the finding for these numbers. We just did a simple filter for 2020 election, grouped by party and summarized the total amount for each of those parties. The most difficult part of this analysis was figuring out how to change the "amount" column from a character to a number. Me and my partners weren't sure how to do that, so we prompted ChatGPT with that question and it gave us the top part of the below code.
+
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -60,10 +61,15 @@ In this notebook, we are reverse engineering five sentences from the story.
 #sports_owners_donations$amount <- as.numeric(amount))
 
 clean_numeric <- function(x) {
-  as.numeric(gsub("[,$]", "", x))
+  as.numeric(gsub("[$,]", "", x))
 }
 
-sports_owners_donations$amount <- clean_numeric(sports_owners_donations$amount)
+sports_political_donations$amount <- clean_numeric(sports_political_donations$amount)
+
+sports_political_donations |>
+    filter(election_year == 2020) |>
+    group_by(party) |>
+    summarise(total = sum(amount))
 
 #for above, prompted chatgpt with "how to change datatype in r from character to numeric," then "how do i fix NA results"
 
@@ -73,11 +79,20 @@ sports_owners_donations$amount <- clean_numeric(sports_owners_donations$amount)
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here]
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?]
+* **Sentence text**: [Paste in sentence to engineer here] "That strong Republican lean is consistent with owners’ spending in the 2018 and 2016 federal elections as well. A deep search in the Federal Election Commission database of campaign finances for principal owners, controlling owners, co-owners and commissioners from the NBA, NFL, NHL, WNBA, MLB and NASCAR reveals that this deep-pocketed group has sent $34.2 million (72.9 percent) to Republican campaigns or super PACs purely supporting Republican causes, compared to $10.1 million (21.5 percent) to Democrats over the past three elections. Less than 6 percent of contributions went to bipartisan or unaffiliated recipients."
+* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?] At first, it looked like the values were slightly off from what the five thirty-eight story initially reported, but after re-doing the math, figured out that the "Bipartisan, but mostly ____" were included in the calculations. After re-running the numbers, everything checked out.
 
 ```{r}
 # Put code to reverse engineer sentence here
+
+question_2 <- sports_political_donations |> filter(str_detect(election_year, "2016|2018")) |>
+  group_by(party) |>
+  summarise(total = sum(amount)) |>
+  arrange(desc(total))
+
+question_2_percent <- question_2 |> mutate(percent = total/sum(total))
+
+question_2_percent
 
 # Display results of code below this codeblock
 
