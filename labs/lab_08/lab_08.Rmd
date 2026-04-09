@@ -118,7 +118,7 @@ To answer this question, do the following:
 6.  Add a label for each point that shows the zip code using geom_text() - see some examples of its use at <https://ggplot2.tidyverse.org/reference/geom_text.html#ref-examples>. Try to make the names as easy to read as possible by avoiding overlap.
 7.  In the answer space below, describe what you see and answer the questions posed above. In a general sense, what do you think this means? Feel free to consider the actual raw values: how would you report out the main point(s) of this chart?
 
-**A3.**
+**A3.** There don't appear to be any strong patterns. The median income doesn't seem to drag down any particular zip codes in this data since most of those values hover around $40000. The higher median incomes maybe have a *slightly* lower call rate, but it doesn't seem conclusive since the lowest income zip code was one of the lowest call rates seen in the scatterplot. As far as trying to report these results, the raw data would be more effective. It's better to say that the highest amount of calls occurred in zip codes 20745 and 20743 instead of using this chart to try and tie it into median income when there isn't a super strong link.
 
 ```{r}
 pg_calls_zip <- pg_overdoses |> 
@@ -128,21 +128,23 @@ pg_calls_zip <- pg_overdoses |>
 
 variables_acs <- load_variables(2022, "acs5", cache=TRUE)
 
-maryland_incomes <- get_acs(
+median_income_zip <- get_acs(
   geography = "zcta",
-  variables = c(medincome = "B06011PR_001"),
-  state = "MD",
+  variables = c(medincome = "B06011_001"),
   year = 2022) |>
   mutate(GEOID = as.character(GEOID))
 
-joined_calls_zip <- pg_calls_zip |> full_join(maryland_incomes, join_by(zipcode == GEOID))
+joined_calls_zip <- pg_calls_zip |> right_join(median_income_zip, join_by(zipcode == GEOID))
 
 library(ggplot2)
-ggplot(mtcars, aes(x = , y = mpg)) +
+  ggplot(joined_calls_zip, aes(x = estimate, y = total)) +
   geom_point() +
+  geom_text(aes(label = zipcode), check_overlap = TRUE, nudge_y = 2) +
+  xlim(0, 75000) +
   labs(
-    title = "Car Weight vs MPG",
-    x = "Weight",
-    y = "Miles per Gallon"
+    title = "Median Income doesn't have a huge sway on PG County Overdose Calls",
+    x = "Estimated Median Income",
+    y = "Total Calls",
+    caption = "Source: PG County EMS and ACS 2022"
   )
 ```
