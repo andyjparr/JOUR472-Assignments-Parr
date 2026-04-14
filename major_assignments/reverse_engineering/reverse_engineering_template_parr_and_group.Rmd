@@ -16,9 +16,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Introduction 
+## Introduction
 
-In this notebook, we are reverse engineering the story, [STORY NAME](STORY URL)
+In this notebook, we are reverse engineering the story, [STORY NAME](STORY%20URL)
 
 ## Load libraries
 
@@ -33,7 +33,7 @@ library(lubridate)
 
 ## Load and Cleaning Data
 
-In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data. 
+In this section, describe the source of the data, write a basic data dictionary for data you are working with, and discuss any caveats or issues you discovered working with this data.
 
 ```{r}
 # Load required data
@@ -47,13 +47,13 @@ sports_political_donations <- read_csv("data/sports-political-donations.csv") |>
 ```
 
 ## Sentences to Engineer
+
 In this notebook, we are reverse engineering five sentences from the story.
 
 ### Sentence 1
 
-* **Sentence text**: "Sports owners' contributions to federal elections since 2015: $47 million ($10m to republicans, $1.9 million to Dems in 2020 as of publishing)"
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?] We were able to confirm the finding for these numbers. We just did a simple filter for 2020 election, grouped by party and summarized the total amount for each of those parties. The most difficult part of this analysis was figuring out how to change the "amount" column from a character to a number. Me and my partners weren't sure how to do that, so we prompted ChatGPT with that question and it gave us the top part of the below code.
-
+-   **Sentence text**: "Sports owners' contributions to federal elections since 2015: \$47 million (\$10m to republicans, \$1.9 million to Dems in 2020 as of publishing)"
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?] We were able to confirm the finding for these numbers. We just did a simple filter for 2020 election, grouped by party and summarized the total amount for each of those parties. The most difficult part of this analysis was figuring out how to change the "amount" column from a character to a number. Me and my partners weren't sure how to do that, so we prompted ChatGPT with that question and it gave us the top part of the below code.
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -79,8 +79,8 @@ sports_political_donations |>
 
 ### Sentence 2
 
-* **Sentence text**: [Paste in sentence to engineer here] "That strong Republican lean is consistent with owners’ spending in the 2018 and 2016 federal elections as well. A deep search in the Federal Election Commission database of campaign finances for principal owners, controlling owners, co-owners and commissioners from the NBA, NFL, NHL, WNBA, MLB and NASCAR reveals that this deep-pocketed group has sent $34.2 million (72.9 percent) to Republican campaigns or super PACs purely supporting Republican causes, compared to $10.1 million (21.5 percent) to Democrats over the past three elections. Less than 6 percent of contributions went to bipartisan or unaffiliated recipients."
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?] At first, it looked like the values were slightly off from what the five thirty-eight story initially reported, but after re-doing the math, figured out that the "Bipartisan, but mostly ____" were included in the calculations. After re-running the numbers, everything checked out.
+-   **Sentence text**: [Paste in sentence to engineer here] "That strong Republican lean is consistent with owners’ spending in the 2018 and 2016 federal elections as well. A deep search in the Federal Election Commission database of campaign finances for principal owners, controlling owners, co-owners and commissioners from the NBA, NFL, NHL, WNBA, MLB and NASCAR reveals that this deep-pocketed group has sent \$34.2 million (72.9 percent) to Republican campaigns or super PACs purely supporting Republican causes, compared to \$10.1 million (21.5 percent) to Democrats over the past three elections. Less than 6 percent of contributions went to bipartisan or unaffiliated recipients."
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?] At first, it looked like the values were slightly off from what the five thirty-eight story initially reported, but after re-doing the math, figured out that the "Bipartisan, but mostly \_\_\_\_" were included in the calculations. After re-running the numbers, everything checked out.
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -100,9 +100,9 @@ question_2_percent
 
 ### Sentence 3
 
-* **Sentence text**: [Paste in sentence to engineer here] “But while that overall summary is interesting, a more pronounced signal begins to emerge when we look more closely at this group’s larger political donations. There are 40 owners who have donated at least $100,000 to Republican causes over the six-year period, compared to 23 owners topping $100,000 to Democrats, helping lead to these splits”
+-   **Sentence text**: [Paste in sentence to engineer here] “But while that overall summary is interesting, a more pronounced signal begins to emerge when we look more closely at this group’s larger political donations. There are 40 owners who have donated at least \$100,000 to Republican causes over the six-year period, compared to 23 owners topping \$100,000 to Democrats, helping lead to these splits”
 
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?] No, our results were just a bit different from the ones observed in the article. The numbers were very close, but we observed just a bit less on both parties than what five thirty-eight said. Maybe when we were cleaning the data it changed a number and put some people who were close to the 100,000 minimum just beneath it?
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?] No, our results were just a bit different from the ones observed in the article. The numbers were very close, but we observed just a bit less on both parties than what five thirty-eight said. Maybe when we were cleaning the data it changed a number and put some people who were close to the 100,000 minimum just beneath it?
 
 ```{r}
 # Put code to reverse engineer sentence here
@@ -127,8 +127,8 @@ big_donations
 
 ### Sentence 4
 
-* **Sentence text**: [Paste in sentence to engineer here] “Overall, 51.7 percent of all contributions by WNBA owners went to Democrats, with 42.3 percent going to Republicans. And of the $1.3 million contributed by WNBA owners to Republicans, 65.5 percent comes from Kelly Loeffler, the Republican from Georgia who is co-owner of the Atlanta Dream.”
-* **Analysis summary**: [Write up two to three sentences describing the results of your analysis.  Were you able to confirm the finding? If not, why not?] Our analysis confirms both findings. The first section of code shows that 51.7%, or $1.6 million, went to Democrats and 42.3%, or $1.3 million, went to Republicans. The second section of code shows that Kelly Loeffler donated $867,150 which accounts for 65.5% of WNBA Republican contributions.
+-   **Sentence text**: [Paste in sentence to engineer here] “Overall, 51.7 percent of all contributions by WNBA owners went to Democrats, with 42.3 percent going to Republicans. And of the \$1.3 million contributed by WNBA owners to Republicans, 65.5 percent comes from Kelly Loeffler, the Republican from Georgia who is co-owner of the Atlanta Dream.”
+-   **Analysis summary**: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?] Our analysis confirms both findings. The first section of code shows that 51.7%, or \$1.6 million, went to Democrats and 42.3%, or \$1.3 million, went to Republicans. The second section of code shows that Kelly Loeffler donated \$867,150 which accounts for 65.5% of WNBA Republican contributions.
 
 ```{r}
 
@@ -157,9 +157,9 @@ republican_wnba_spend
 
 ### Sentence 5
 
-Sentence text: [Paste in sentence to engineer here] “More than 63 percent of the $47 million in the database of nearly 3,000 contributions comes from just 108 donations split among these 40 owners — and 79 percent of that money went to Republican causes.”
+Sentence text: [Paste in sentence to engineer here] “More than 63 percent of the \$47 million in the database of nearly 3,000 contributions comes from just 108 donations split among these 40 owners — and 79 percent of that money went to Republican causes.”
 
-Analysis summary: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?] We were able to confirm the findings that of the $47 million donated, just over 63 percent was concentrated among 108 donations. We also found that 79 percent of that total was donated to Republican causes.  
+Analysis summary: [Write up two to three sentences describing the results of your analysis. Were you able to confirm the finding? If not, why not?] We were able to confirm the findings that of the \$47 million donated, just over 63 percent was concentrated among 108 donations. We also found that 79 percent of that total was donated to Republican causes.
 
 ```{r}
 # Put code to reverse engineer sentence here
