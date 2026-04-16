@@ -33,7 +33,7 @@ Let's explore Maryland elections, power outages and electric vehicle data and ma
 
 Get the geometry for Maryland's counties using tigris and, joining that dataframe to your results dataframe, make a county-level map of the differences between Moore and Brown's percentages. What is the story here, and what is the county with the most interesting results?
 
-**A1.**
+**A1. The big story here is that Moore earned a higher percent of the vote than Brown in every county, despite the largest percent difference being a little over seven. The most interesting thing I notice is that the three counties with a difference of seven or more, (Queen Anne, Kent and Carroll), were all in the northern chunk of the state, meaning those were the areas the saw the biggest split tickets between Moore and Brown.**
 
 ```{r}
 md_statewide_county <- read_csv("data/md_statewide_county.csv")
@@ -56,9 +56,21 @@ ggplot() +
 
 **Q2.** Make a county-level map to explore the number of customers impacted by power outages in Maryland from last March. Load the `county_outages_march2023.csv` file in the data folder and calculate a rate of customers with outages per 10,000 total customers for each county. Then join that dataframe to your Maryland counties dataframe you made in Q1 and create a county-level map of the results; you may need to tweak the fill scale to make the distinctions clearer. What's the potential story here? Given access to other months' outage data, what would your next steps be in reporting a story?
 
-**A2.**
+**A2. The big story here is what the heck is happening with Talbot County? It has of outage rate of nearly 2000 per 10000 residents, way higher than the second place Charles County at 257. If I had access to data from other months, I'd like to know if March 2023 was just a blip on the radar for Talbot County or if it's a constant issue. Regardless of what the answer is, it ends up being a story.**
 
 ```{r}
+
+outages <- read_csv("data/county_outages_march2023.csv")
+
+outages <- outages |> mutate(outage_rate = (outage_customers/total_customers)*10000)
+
+county_outages <- md_counties |>
+  left_join(outages, join_by(NAME == county))
+
+ggplot() +
+  geom_sf(data=county_outages, aes(fill=outage_rate)) +
+  scale_colour_viridis_b(option="magma") +
+  theme_minimal()
 ```
 
 **Q3.** You've been assigned a story about the use of electric vehicles in Maryland and you want to make a map of the prevalence of electric vehicles in each county. Load the `ev_2020_2023.csv` file, which has the number of electric and hybrid vehicles per county from July 2020 and March 2023 and calculate a percentage change for each county (remember, that's `new-old/old`). Using the Maryland counties dataframe you made for Q1, make a county map showing the percentage change. What counties stand out to you? What questions do you have about the changes you're seeing?
@@ -69,7 +81,44 @@ Then, calculate a per capita rate of electric & hybrid vehicles using the March 
 
 Finally, make a second county map showing the per capita rate. What counties stand out on this map? How is it different from the first one you made?
 
-**A3.**
+**A3. For part one, the thing that stood out the most is that Caroline County saw a much bigger increase in EV use than anywhere else in the state. Does it have something to do with being right next to Delaware? Who knows, maybe there's a story there. Other big thing I noticed is that every county had an increase in EV usage, it wasn't decreasing in any county. Are there movements that were successful to get people to switch?**
+
+The story switched with the second map. Despite the largest increase being seen with Caroline County, the highest EVs per capita lies in Calvert County. Caroline County is over 100 EVs per 10000 residents behind Calvert County despite it seeing the largest increase.
 
 ```{r}
+ev_md <- read_csv("data/ev_2020_2023.csv")
+
+ev_md <- ev_md |> mutate(percent_change = (march_2023 - july_2020)/july_2020)
+
+county_evs <- md_counties |>
+  left_join(ev_md, join_by(NAME == county))
+
+ggplot() +
+  geom_sf(data=county_evs, aes(fill=percent_change)) +
+  scale_colour_viridis_b(option="magma") +
+  theme_minimal()
+
+library(tidycensus)
+
+md_county_population <- get_acs(geography = "county",
+              variables = c(population = "B01001_001"),
+              year = 2021,
+              state = "MD",
+              geometry = TRUE)
+
+md_county_population <- md_county_population |>
+  rename(county = NAME) |>
+  mutate(county = str_to_title(str_remove_all(county,", Maryland"))) |>
+  mutate(county = str_trim(county,side="both")) |>
+  rename(population = estimate) |>
+  select(county, population, geometry)
+
+county_pops_with_ev <- st_join(md_county_population, county_evs)
+
+county_pops_with_ev <- county_pops_with_ev |> mutate(ev_per_capita = (march_2023/population)*10000)
+
+ggplot() +
+  geom_sf(data=county_pops_with_ev, aes(fill=ev_per_capita)) +
+  scale_colour_viridis_b(option="magma") +
+  theme_minimal()
 ```
