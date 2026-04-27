@@ -1,0 +1,32 @@
+---
+title: "final_project"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+
+wbb_teams <- read_csv("womens-college-basketball-main/teams.csv") |> clean_names()
+
+wbb_rosters23 <- read_csv("womens-college-basketball-main/wbb_rosters_2022_23.csv") |> mutate(player_id = as.character(player_id))
+wbb_rosters24 <- read_csv("womens-college-basketball-main/wbb_rosters_2023_24.csv") |> mutate(player_id = as.character(player_id))
+wbb_rosters25 <- read_csv("womens-college-basketball-main/wbb_rosters_2024_25.csv") |> mutate(player_id = as.character(player_id))
+wbb_rosters26 <- read_csv("womens-college-basketball-main/wbb_rosters_2025_26.csv")
+
+combined_rosters <- bind_rows(list(wbb_rosters23, wbb_rosters24, wbb_rosters25))
+
+non_us <- read_csv("womens-college-basketball-main/non_us.csv")|> clean_names()
+
+coach_history <- read_csv("womens-college-basketball-main/coaches/coaches_with_history.csv") |> clean_names()
+```
+```{r}
+wbb_rosters23 <- read_csv("womens-college-basketball-main/wbb_rosters_2022_23.csv") |> mutate(player_id = as.character(player_id))
+wbb_rosters24 <- read_csv("womens-college-basketball-main/wbb_rosters_2023_24.csv") |> mutate(player_id = as.character(player_id))
+wbb_rosters25 <- read_csv("womens-college-basketball-main/wbb_rosters_2024_25.csv") |> mutate(player_id = as.character(player_id))
+wbb_rosters26 <- read_csv("womens-college-basketball-main/wbb_rosters_2025_26.csv")
+
+combined_rosters <- bind_rows(list(wbb_rosters23, wbb_rosters24, wbb_rosters25))
+```
+
+
