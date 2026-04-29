@@ -66,9 +66,13 @@ trigrams <- md_attorney_sanctions |>
 
 **Q3.** Let's drop back down to more traditional text analysis - take the top trigram from Q2 and write code to see how many times it occurs in the text column in each fiscal year. What do you think the answer produced by your code suggests? What else could you do to try and clarify the most important reasons attorneys get sanctioned?
 
-**A3.**
+**A3. The highest amount was in 2021, but there were no occurrences in 2012, 2013 or 2014 (but there were a few in 2011). I guess it means that lawyers were pretty responsible for a few years in terms of keeping their accounts in order then really started slacking off again. The way I could find out the most important reasons attorneys get sanctioned is go back to the ngram list from question two and see how often each one happens for each fiscal year, figure out what reasons have grown or shrunk in their occurrence rate.**
 
 ```{r}
 
-trigram_occur <- md_attorney_sanctions #where to go from here
+trigram_occur <- md_attorney_sanctions |>
+  mutate(has_trigram = str_detect(text, "attorney trust account|Attorney trust account|Attorney Trust Account|ATTORNEY TRUST ACCOUNT")) |>
+  group_by(fiscal_year) |>
+  summarise(count = sum(has_trigram)) |>
+  arrange(desc(count))
 ```
