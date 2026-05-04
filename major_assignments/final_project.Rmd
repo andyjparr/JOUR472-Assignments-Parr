@@ -14,7 +14,7 @@ wbb_rosters24 <- read_csv("womens-college-basketball-main/wbb_rosters_2023_24.cs
 wbb_rosters25 <- read_csv("womens-college-basketball-main/wbb_rosters_2024_25.csv") |> mutate(player_id = as.character(player_id))
 wbb_rosters26 <- read_csv("womens-college-basketball-main/wbb_rosters_2025_26.csv")
 
-combined_rosters <- bind_rows(list(wbb_rosters23, wbb_rosters24, wbb_rosters25)) # <- This code line puts all the roster info into one dataframe
+combined_rosters <- bind_rows(list(wbb_rosters23, wbb_rosters24, wbb_rosters25, wbb_rosters26)) # <- This code line puts all the roster info into one dataframe
 
 non_us <- read_csv("womens-college-basketball-main/non_us.csv")|> clean_names()
 
@@ -25,5 +25,26 @@ Data exploration: Once all the roster data is combined, we have over 41000 data 
 The other dataframes we got were the teams, which doesn't have a ton of relevant information at first glance, but does show us that there are over 1100 schools that make up this dataset, a non-us chart that shows the amount of players from every county and the percent change from 2023 to 2024, then lastly there's also a coaching history dataframe. This one has almost 13000 observations, stating the person's title on the staff, their school and tenure.
 
 As far as the limitations, this data only goes back four years. Not a huge sample of time to look at, but there is a LOT of data for the four years we have access to in this project. Because of that timeframe, we can't really answer the NIL questions we posed last week and we will need to adjust our time frames for the change over time questions.
+
+Q1: Do P5 schools get more international players than mid-majors?
+
+```{r}
+combined_rosters <- combined_rosters |>
+  mutate(power_5 = case_when(
+      conference %in% c("SEC", "ACC", "Big Ten", "Big 12", "Pac-12", "Big East") ~ TRUE,
+      TRUE ~ FALSE)
+    )
+
+combined_rosters <- combined_rosters |>
+  mutate(
+    non_us = case_when(
+      country_clean == "USA" ~ FALSE,
+      TRUE ~ TRUE)
+  )
+
+question_one <- combined_rosters |>
+  select(power_5, non_us) |>
+  count(power_5, non_us)
+```
 
 
