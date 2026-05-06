@@ -28,23 +28,115 @@ As far as the limitations, this data only goes back four years. Not a huge sampl
 
 Q1: Do P5 schools get more international players than mid-majors?
 
-```{r}
-combined_rosters <- combined_rosters |>
-  mutate(power_5 = case_when(
-      conference %in% c("SEC", "ACC", "Big Ten", "Big 12", "Pac-12", "Big East") ~ TRUE,
-      TRUE ~ FALSE)
-    )
+By total count, mid/low major schools get more international players. But, by proportion, P5 schools atract much more international players
 
-combined_rosters <- combined_rosters |>
+```{r}
+combined_rosters_international <- combined_rosters |>
   mutate(
-    non_us = case_when(
-      country_clean == "USA" ~ FALSE,
-      TRUE ~ TRUE)
+    conference_type = case_when(
+      str_detect(conference, "ACC") ~ "Power5",
+      str_detect(conference, "Big East") ~ "Power5",
+      str_detect(conference, "Big Ten") ~ "Power5",
+      str_detect(conference, "Big 12") ~ "Power5",
+      str_detect(conference, "Pac-12") ~ "Power5",
+      str_detect(conference, "SEC") ~ "Power5",
+      .default = "Mid/Low"
+    ),
+    international = case_when(
+      str_detect(country_clean, "USA") ~ "No",
+      .default = "Yes"
+    )
   )
 
-question_one <- combined_rosters |>
-  select(power_5, non_us) |>
-  count(power_5, non_us)
+combined_rosters_international |>
+  group_by(conference_type, international) |>
+  summarise(count = n())
+
+combined_rosters_international |>
+  group_by(conference_type) |>
+  summarise(
+    total_players = n(),
+    international_players = sum(international == "Yes"),
+    percent_international = international_players / total_players * 100
+  )
+```
+Q2: Head coaching turnover?
+```{r}
+coaching_turnover <- coach_history |>
+  filter(position_title_standardized == "Head Coach") |>
+  filter(category == "College") |>
+  mutate(coach_change = !is.na(end_year))
+
+coaching_turnover |>
+  group_by(coach_change) |>
+  summarise(total = n())
+```
+Q3: What is the geographic breakdown for the most popular state?
+
+Pennsylvania is the most popular state, with the hotbeds of talent concentrated around Pittsburgh and Philadelphia. To be precise, the most popular city is Houston, just edging out Pittsburgh.
+```{r}
+# First find the most popular state, then build a map of the state
+
+library(tigris)
+library(tidycensus)
+
+popular_state <- combined_rosters |>
+  group_by(state_clean) |>
+  summarise(total = n()) |>
+  arrange(desc(total))
+popular_state
+
+pa_cities <- places(state = "PA", cb = TRUE) |> clean_names() |>
+  left_join(combined_rosters, join_by(name == hometown)) |>
+  group_by(name) |>
+  summarise(total = n()) |>
+  arrange(desc(total))
+
+ggplot() +
+  geom_sf(data = pa_cities, aes(fill = total), color = NA) +
+  scale_fill_viridis_c(option = "magma") +
+  theme_minimal()
+```
+Pre-NIL seniors?
+
+
+```{r}
+wbb_rosters21 <- read_csv("womens-college-basketball-main/wbb_rosters_2020_21.csv")
+
+pre_nil_seniors <- wbb_rosters21 |>
+  filter(str_detect(year, "Senior|Graduate|Graduate Student|Fifth Year|Redshirt Senior|Sr.|R-Sr.|Gr.")) |>
+  mutate(
+    fouryearsenior = case_when(
+      is.na(previous_school_clean) ~ "Yes",
+      .default = "No"
+    ))
+
+pre_nil_seniors |>
+  group_by(fouryearsenior) |>
+  summarise(fouryearseniors_pre = n())
+
+post_nil_seniors <- wbb_rosters26 |>
+  filter(str_detect(year, "Senior|Graduate|Graduate Student|Fifth Year|Redshirt Senior|Sr.|R-Sr.|Gr.")) |>
+    mutate(
+    fouryearsenior = case_when(
+      is.na(previous_school_clean) ~ "Yes",
+      .default = "No"
+    ))
+
+post_nil_seniors |>
+  group_by(fouryearsenior) |>
+  summarise(fouryearseniors_post = n())
 ```
 
+Players stay in home state?
+```{r}
+home_state_stay <- combined_rosters |>
+  left_join(wbb_teams, join_by(team)) |>
+  mutate(stay_home = replace_na(state_clean == team_state.y, FALSE))
+
+home_state_stay |>
+  group_by(stay_home) |>
+  summarise(total = n()) |>
+  arrange(desc(total))
+```
 
