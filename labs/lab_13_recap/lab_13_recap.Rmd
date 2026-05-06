@@ -44,10 +44,11 @@ md_counties <- counties() |>  filter(STATEFP == "24")
 
 ```{r}
 # Join the childcare data with the county data 
-
+childcare_by_county <- childcare_inspections |>
+  left_join(md_counties, join_by(fips == GEOID))
 ```
 
-##### A1:
+##### A1: Use NAMESLAD, not NAME because NAMESLAD specifies the difference between Baltimore City and Baltimore County instead of just calling both Baltimore.
 
 ------------------------------------------------------------------------
 
@@ -56,11 +57,22 @@ md_counties <- counties() |>  filter(STATEFP == "24")
 ```{r}
 # Calculate the percentage of overdue inspections per county
 
+childcare_by_county <- childcare_by_county |>
+  mutate(percent_overdue = overdue/total*100)
+
 # Create the chart with ggplot
+childcare_by_county |>
+  ggplot() +
+  geom_bar(aes(x = NAMELSAD, weight = percent_overdue)) +
+    labs(
+    title="Montgomery County has the highest rate of overdue childcare facility inspections",
+    x = "County",
+    y = "Rate of Overdue Inspections"
+  )
 
 ```
 
-##### **A2:**
+##### **A2:** Montgomery County has the highest rate of overdue childcare facility inspections
 
 ------------------------------------------------------------------------
 
@@ -69,18 +81,29 @@ md_counties <- counties() |>  filter(STATEFP == "24")
 ```{r}
 # First, grab data from the ACS. The ACS variable for children age under 5 is B06001_002 We want 2022 data.
 
+under_5 <- get_acs(
+  geography = "county",
+  variables = c(medincome = "B06001_002"),
+  year = 2022) |>
+  mutate(GEOID = as.character(GEOID))
 ```
 
 ```{r}
 # Rename the column name 'estimate', which has our population data, with something more useful, like 'children_pop'
 
+under_5 <- under_5 |>
+  rename(child_pop = estimate)
 ```
 
 ```{r}
 # Join the dataframes
 
-# Calculate the rates for children per facility
+joined_under_5 <- childcare_by_county |>
+  left_join(under_5, join_by(fips == GEOID))
 
+# Calculate the rates for children per facility
+joined_under_5 <- joined_under_5 |>
+  mutate(care_per_kid = child_pop/total*100)
 ```
 
 ##### **A3:**
