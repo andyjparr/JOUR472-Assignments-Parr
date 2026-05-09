@@ -103,20 +103,33 @@ joined_under_5 <- childcare_by_county |>
 
 # Calculate the rates for children per facility
 joined_under_5 <- joined_under_5 |>
-  mutate(care_per_kid = child_pop/total*100)
+  mutate(care_per_kid = child_pop/total)
 ```
 
-##### **A3:**
+##### **A3: Garrett County has the highest rate, (needs more facilities)**
 
 ------------------------------------------------------------------------
 
 #### **Q4** Make a map of the results for question 3. Are there any areas of the state that are more lacking in childcare facilities?
 
 ```{r}
+# This one was being really weird with the geometry column, I looked up the error message it gave me and it seemed like the easiest fix was to run this other package and fix whatever it didn't like before
 
+library(sf)
+
+joined_under_5_sf <- st_as_sf(joined_under_5)
+
+joined_under_5_sf |>
+  ggplot(aes(fill = care_per_kid)) +
+  geom_sf() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "Children per childcare facility in Maryland",
+    fill = "Children per facility"
+  )
 ```
 
-##### **A4**:
+##### **A4**: The Northwest and the Eastern Shore are generally more lacking in amount of facilities compared to their populations under five years old
 
 ------------------------------------------------------------------------
 
@@ -125,29 +138,50 @@ joined_under_5 <- joined_under_5 |>
 ```{r}
 # Again, grab data from the ACS. The ACS variable for median income is B19013_001. We want 2022 data again.
 
+median_income <- get_acs(
+  geography = "county",
+  variables = c(median_income = "B19013_001"),
+  year = 2022
+) |>
+  mutate(GEOID = as.character(GEOID))
 ```
 
 ```{r}
 # Rename the column name 'estimate', which has our income data, with something more useful, like 'median_income'
 
+median_income <- median_income |>
+  rename(median_income = estimate)
 ```
 
 ```{r}
 # Join the dataframes
 
+median_income_joined <- joined_under_5 |>
+  left_join(median_income, join_by(fips == GEOID))
 ```
 
 ```{r}
 # Create a scatterplot with median income and rate of children per facility
 
+income_joined |>
+  ggplot(aes(x = median_income, y = care_per_kid)) +
+  geom_point() +
+  labs(title = "No strong relationship between median incomes and county childcare facilties",
+    x = "Median income",
+    y = "Children per facility"
+  )
 ```
 
 ```{r}
 # Create a correlation test.
 
+cor.test(
+  income_joined$median_income,
+  income_joined$care_per_kid
+)
 ```
 
-##### A5:
+##### A5: There is no statistically significant correlation. I can see this through the high p-value (which is about 0.61).
 
 ------------------------------------------------------------------------
 
@@ -155,17 +189,33 @@ joined_under_5 <- joined_under_5 |>
 
 ```{r}
 # Read the reports data
+library(rvest)
+library(tidytext)
+
 reports <- read_csv('data/childcare-informal-provider-inspections.csv') |> clean_names()
 ```
 
 ```{r}
 # Create a stopword dictionary (feel free to include more words)
 
+data("stop_words")
+
+stop_words <- stop_words |>
+  add_row(word = "childcare") |> 
+  add_row(word = "child") |> 
+  add_row(word = "care")
 ```
 
 ```{r}
 # Unnest tokens into bigrams, removing stop words and repasting bigrams, list bigrams
 
+reports |>
+  unnest_tokens(bigram, initial_findings, token = "ngrams", n = 2) |>
+  separate(bigram, c("word1", "word2"), sep = " ") |>
+  filter(!word1 %in% stop_words$word,
+         !word2 %in% stop_words$word) |>
+  unite(bigram, word1, word2, sep = " ") |>
+  count(bigram, sort = TRUE)
 ```
 
-##### A6:
+##### A6: The most common bigram was emergency bag, which I guess means something like a first aid kit? But the one that stuck out to me was "missing items." What kind of stuff is often missing? How do these facilities just forget about important things? Maybe to answer the first part I could look for larger ngrams to see if things are listed as "missing items: blank" and find out the most frequently forgotten things.
