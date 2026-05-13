@@ -61,6 +61,8 @@ combined_rosters_international |>
   )
 ```
 Q2: Head coaching turnover?
+
+Overall, more schools opted to switch their head coach than hold on, but it was very close. There were 833 instances of a head coaching change in the data compared to 717 data points where the coach stayed through the entire timeframe. 
 ```{r}
 coaching_turnover <- coach_history |>
   filter(position_title_standardized == "Head Coach") |>
@@ -71,9 +73,11 @@ coaching_turnover |>
   group_by(coach_change) |>
   summarise(total = n())
 ```
-Q3: What is the geographic breakdown for the most popular state?
+Q3: What is the geographic breakdown for the most popular state? Does the income play a role in that geography?
 
 Pennsylvania is the most popular state, with the hotbeds of talent concentrated around Pittsburgh and Philadelphia. To be precise, the most popular city is Houston, just edging out Pittsburgh.
+
+Income did not seem to have a major relationship with where players were from. The hotbed areas did not seem to stand out in any noticable pattern when compared to median income.
 ```{r}
 # First find the most popular state, then build a map of the state
 
@@ -96,8 +100,29 @@ ggplot() +
   geom_sf(data = pa_cities, aes(fill = total), color = NA) +
   scale_fill_viridis_c(option = "magma") +
   theme_minimal()
+
+pa_city_income <- get_acs(
+  geography = "place",
+  variables = "B19013_001",
+  state = "PA",
+  year = 2023,
+  survey = "acs5"
+)
+
+pa_city_income <- pa_city_income |>
+  mutate(
+    city = str_remove(
+      NAME,
+      " (city|borough|town|township|CDP|village),.*$"
+    )
+  )
+
+pa_cities_income_map <- pa_cities |>
+  left_join(pa_city_income, join_by(name == city))
+
+ggplot() + geom_sf(data = pa_cities_income_map, aes(fill = estimate), color = NA) + scale_fill_viridis_c(option = "magma") + theme_minimal()
 ```
-Pre-NIL seniors?
+Q4: Was there a change in the amount of four-year seniors pre- and post-NIL?
 
 
 ```{r}
@@ -128,7 +153,9 @@ post_nil_seniors |>
   summarise(fouryearseniors_post = n())
 ```
 
-Players stay in home state?
+Q5: How many players stay in their home state?
+
+Over 32000 of the players in the data left their home state to play basketball compared to just under 25,000 who stayed home.
 ```{r}
 home_state_stay <- combined_rosters |>
   left_join(wbb_teams, join_by(team)) |>
