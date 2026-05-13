@@ -124,7 +124,7 @@ ggplot() + geom_sf(data = pa_cities_income_map, aes(fill = estimate), color = NA
 ```
 Q4: Was there a change in the amount of four-year seniors pre- and post-NIL?
 
-
+Yes. In the 2020-21 data, (prior to NIL), 2081 of the 2591 seniors in the set were four-year seniors. Then in the 2025-26 data, 2555 of the 3618 were four-year seniors. That's about 80% in the pre-NIL era compared to about 71% in the post-NIL era. As expected, the amount of four-year seniors has decreased since the introduction of NIL.
 ```{r}
 wbb_rosters21 <- read_csv("womens-college-basketball-main/wbb_rosters_2020_21.csv")
 
